@@ -1,5 +1,9 @@
 # Login Client/Server Application
 
+Prerequisites:
+
+- Node 8.11.1+
+
 ## Starting the Login Server
 1. *Run the server*
 ```
