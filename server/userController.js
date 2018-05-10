@@ -11,7 +11,7 @@ const router = express.Router();
 router.use(bodyParser.urlencoded({extended: true}));
 router.use(bodyParser.json());
 
-// create a user
+// register a user
 router.post('/', function (req, res) {
   bcrypt.hash(req.body.password, SALT_ROUNDS, function (err, hash) {
     if (err) {
@@ -41,9 +41,9 @@ router.get('/', function (req, res) {
   });
 });
 
-// get a user
-router.get('/:id', function (req, res) {
-  user.findById(req.params.id, function (err, user) {
+// get a single user by email
+router.get('/:email', function (req, res) {
+  user.findUserByEmail(req.params.email, function (err, user) {
     if (err) return res.status(500).send("There was a problem finding the user.");
     if (!user) return res.status(404).send("No user found.");
     res.status(200).send(user);
