@@ -1,4 +1,4 @@
-# Login
+# Login Client/Server Application
 
 ## Starting the Login Server
 1. *Run the server*
