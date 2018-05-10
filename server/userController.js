@@ -33,6 +33,20 @@ router.post('/', function (req, res) {
   });
 });
 
+// authenticate user
+router.post('/login', function (req, res) {
+  user.findUserByEmail(req.body.email, function (err, user) {
+    if (err) return res.status(500).send(`There was a problem finding the user ${req.body.email}.`);
+    if (!user) return res.status(404).send(`${req.body.email} not found.`);
+
+    bcrypt.compare(req.body.password, user.password, function (err, result) {
+      if (err) return res.status(500).send(`There was a problem authenticating the user ${req.body.email}.`);
+      if (!result) return res.status(401).send(`User name or password did not match our records.`);
+      res.status(200).send(user);
+    });
+  });
+});
+
 // get all users
 router.get('/', function (req, res) {
   user.find({}, function (err, users) {
@@ -44,8 +58,8 @@ router.get('/', function (req, res) {
 // get a single user by email
 router.get('/:email', function (req, res) {
   user.findUserByEmail(req.params.email, function (err, user) {
-    if (err) return res.status(500).send("There was a problem finding the user.");
-    if (!user) return res.status(404).send("No user found.");
+    if (err) return res.status(500).send(`There was a problem finding the user ${req.params.email}.`);
+    if (!user) return res.status(404).send(`${req.params.email} not found.`);
     res.status(200).send(user);
   });
 });

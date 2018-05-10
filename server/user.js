@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema({
 });
 
 UserSchema.statics.findUserByEmail = function(email, cb) {
-  this.find({email: new RegExp(email, 'i')}, cb);
+  this.findOne({email}, cb);
 };
 
 mongoose.model('User', UserSchema);
