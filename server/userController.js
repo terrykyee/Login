@@ -4,23 +4,33 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import user from './User';
+import bcrypt from 'bcrypt';
 
+const SALT_ROUNDS = 10;
 const router = express.Router();
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
 // create a user
 router.post('/', function (req, res) {
-    user.create({
-            firstName : req.body.firstName,
-            lastName : req.body.lastName,
-            email : req.body.email,
-            password : req.body.password
-        },
-        function (err, user) {
-            if (err) return res.status(500).send("There was a problem adding the information to the database.");
-            res.status(200).send(user);
-        });
+    bcrypt.hash(req.body.password, SALT_ROUNDS, function (err, hash) {
+        if (err) {
+            return res.status(500).send("There was a problem encrypting your password.");
+        }
+
+        user.create({
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                email: req.body.email,
+                password: hash
+            },
+            function (err, user) {
+                if (err) {
+                    return res.status(500).send("There was a problem adding the information to the database.");
+                }
+                res.status(200).send(user);
+            });
+    });
 });
 
 // get all users
@@ -44,7 +54,7 @@ router.get('/:id', function (req, res) {
 router.delete('/:id', function (req, res) {
     user.findByIdAndRemove(req.params.id, function (err, user) {
         if (err) return res.status(500).send("There was a problem deleting the user.");
-        res.status(200).send("User "+ user.name +" was deleted.");
+        res.status(200).send("User "+ user.firstName +" was deleted.");
     });
 });
 
