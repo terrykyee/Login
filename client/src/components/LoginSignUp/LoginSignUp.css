@@ -1,0 +1,48 @@
+.main {
+}
+
+.inputField {
+  display: flex;
+  flex-direction: row;
+  margin: 7px;
+  align-content: space-between;
+}
+
+.input {
+  width: 250px;
+}
+.label {
+  flex-grow: 1;
+  font-size: small;
+  font-family: Verdana;
+  font-weight: bold;
+  margin-right: 15px;
+  margin-top: 2px;
+  text-align: left;
+}
+
+.loginButtonPane {
+  display: flex;
+  margin-top: 15px;
+}
+
+
+.loginButton {
+  flex-grow: 1;
+  font-weight: bold;
+  color: white;
+  font-family: Verdana;
+  border: none;
+  background: deepskyblue;
+  font-size: 15px;
+  height: 25px;
+  margin: 0 120px;
+}
+
+.loginButton:focus {
+  outline: none;
+}
+
+.loginButton:active {
+  background: skyblue;
+}
