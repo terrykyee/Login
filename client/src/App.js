@@ -26,6 +26,9 @@ type AppStateType = {
   login: boolean,
 }
 
+/**
+ * Main application page
+ */
 class App extends React.Component<AppPropsType, AppStateType> {
   static propTypes = {};
 
