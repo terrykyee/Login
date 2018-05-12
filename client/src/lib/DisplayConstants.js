@@ -15,4 +15,5 @@ export const LoginDisplayStringConstants = {
   PASSWORD_HINT: 'Super Secret',
   LOGIN: 'Log In',
   SIGN_UP: 'Sign Up',
+  LOGOUT: 'Log Out',
 };

@@ -42,6 +42,10 @@ router.post('/login', function (req, res) {
     bcrypt.compare(req.body.password, user.password, function (err, result) {
       if (err) return res.status(500).send(`There was a problem authenticating the user ${req.body.email}.`);
       if (!result) return res.status(401).send(`User name or password did not match our records.`);
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Request-Method', '*');
+      res.header('Access-Control-Allow-Methods', 'OPTIONS, GET, POST');
+      res.header('Access-Control-Allow-Headers', '*');
       res.status(200).send(user);
     });
   });
