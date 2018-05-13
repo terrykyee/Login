@@ -42,7 +42,11 @@ type LoginSignUpStateType = {
   error: string,
   loggedIn: boolean,
   rememberMe: boolean,
+  validate: boolean,
 }
+
+const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/i;
 
 const ErrorMessages = {
   NOT_FOUND_MESSAGE: 'Your user name has not been registered, please visit the Sign Up page if you wish to register',
@@ -72,14 +76,22 @@ class LoginSignUpComponent extends
       error: '',
       loggedIn: false,
       rememberMe: false,
+      passwordValid: false,
+      validate: false,
     }
   }
 
   state: LoginSignUpStateType;
   props: LoginSignUpPropsType;
 
-  componentDidMount = () => {
+  componentWillMount = () => {
     this.retrieveUserInfo();
+  };
+
+  componentDidMount = () => {
+    this.setState({
+      validate: true,
+    });
   };
 
   componentWillReceiveProps = (nextProps: LoginSignUpPropsType) => {
@@ -143,6 +155,7 @@ class LoginSignUpComponent extends
    * @param event {SyntheticMouseEvent} Mouse click event.
    */
   loginSignUpHandler = (event: SyntheticMouseEvent<*>) => {
+
     if (this.props.login) {
       LoginServerRequests.loginUser(this.state.email, this.state.password)
         .then((response: LoginServerResponseType) => {
@@ -224,6 +237,27 @@ class LoginSignUpComponent extends
   };
 
   /**
+   * Validate user entered data
+   * @param props React properties
+   * @param state React state
+   * @returns {boolean} True if all fields valid when in sign in mode,
+   * in login mode only email and password need to be valid, otherwise false
+   */
+  userDataValid = (props: LoginSignUpPropsType, state: LoginSignUpStateType): boolean => {
+    let validName = true;
+
+    if (!props.login) {
+      validName = state.firstName && state.lastName;
+    }
+
+    console.log(validName);
+    console.log(state.email.search(EMAIL_REGEX));
+    console.log(state.password.search(PASSWORD_REGEX));
+    return validName && state.email.search(EMAIL_REGEX) >= 0
+      && state.password.search(PASSWORD_REGEX) >= 0;
+  };
+
+  /**
    * Render this React component.
    * @returns {XML}
    */
@@ -261,6 +295,8 @@ class LoginSignUpComponent extends
             name={LoginDisplayStringConstants.FIRST_NAME_LABEL}
             type="text"
             value={this.state.firstName}
+            validate={this.state.validate}
+            validationCallback={res => this.setState({ validate: false })}
             placeholder={LoginDisplayStringConstants.FIRST_NAME_HINT}
             onChange={text => this.setState({firstName: text})}
             onBlur={() => {}}
@@ -284,6 +320,8 @@ class LoginSignUpComponent extends
             name={LoginDisplayStringConstants.LAST_NAME_LABEL}
             type="text"
             value={this.state.lastName}
+            validate={this.state.validate}
+            validationCallback={res => this.setState({ validate: false })}
             placeholder={LoginDisplayStringConstants.LAST_NAME_HINT}
             onChange={text => this.setState({lastName: text})}
             onBlur={() => {}}
@@ -326,12 +364,14 @@ class LoginSignUpComponent extends
               name={LoginDisplayStringConstants.EMAIL_LABEL}
               type="text"
               value={this.state.email}
+              validate={this.state.validate}
+              validationCallback={res => this.setState({ validate: false })}
               placeholder={LoginDisplayStringConstants.EMAIL_HINT}
               onChange={text => this.setState({email: text})}
               onBlur={() => {}}
               validationOption={{
                 name: LoginDisplayStringConstants.EMAIL_LABEL,
-                reg: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
+                reg: EMAIL_REGEX,
                 required: true,
                 regMsg: 'This doesn\'t seem to be a valid email address'
               }}
@@ -347,12 +387,14 @@ class LoginSignUpComponent extends
               name={LoginDisplayStringConstants.PASSWORD_LABEL}
               type="password"
               value={this.state.password}
+              validate={this.state.validate}
+              validationCallback={res => this.setState({ validate: false })}
               placeholder={LoginDisplayStringConstants.PASSWORD_HINT}
               onChange={text => this.setState({password: text})}
               onBlur={() => {}}
               validationOption={{
                 name: LoginDisplayStringConstants.PASSWORD_LABEL,
-                reg: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/i,
+                reg: PASSWORD_REGEX,
                 required: true,
                 regMsg: 'Password must be at least 8 characters with at least one letter and one number'
               }}
@@ -363,6 +405,7 @@ class LoginSignUpComponent extends
           <button
             className="loginButton"
             onClick={this.loginSignUpHandler}
+            disabled={!this.userDataValid(this.props, this.state)}
           >
             {this.props.login ? LoginDisplayStringConstants.LOGIN : LoginDisplayStringConstants.SIGN_UP}
           </button>
