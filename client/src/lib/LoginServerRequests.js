@@ -1,3 +1,7 @@
+//@flow
+/**
+ * @file Login server requests
+ */
 import { buildPost, checkHttpStatusCode } from './FetchUtilities';
 import { LoginServerUrls } from './LoginServerUrls';
 
@@ -16,8 +20,11 @@ export type LoginServerResponseType = {
   __v: number,
 }
 
+/**
+ * Implementations of all Login server requests
+ */
 export class LoginServerRequests {
-  static request(url: string, firstName: string, lastName: string, email: string, password: string): Promise<*> {
+  static request(url: string, firstName: ?string, lastName: ?string, email: string, password: string): Promise<*> {
     return fetch(url, buildPost(firstName, lastName, email, password))
       .then((response: Object) => {
           checkHttpStatusCode(response, LoginServerRequestsErrorMessages.LOGIN_ERROR);
@@ -25,11 +32,12 @@ export class LoginServerRequests {
         });
   }
 
-  static registerUser(firstName: string, lastName: string, email: string, password: string): Promise<*> {
+  static registerUser(firstName: ?string, lastName: ?string, email: string, password: string): Promise<*> {
     const url = LoginServerUrls.user();
     return LoginServerRequests.request(url, firstName, lastName, email, password);
   }
 
+  // plain text passwords should only ever be sent over an encrypted connection
   static loginUser(email: string, password: string): Promise<*> {
     const url = LoginServerUrls.login();
     return LoginServerRequests.request(url, null, null, email, password);

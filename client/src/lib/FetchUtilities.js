@@ -1,3 +1,7 @@
+//@flow
+/**
+ * @file Utilities for use with fetch and building up REST requests
+ */
 import {
   DataAccessError,
   UnauthenticatedDataAccessError,

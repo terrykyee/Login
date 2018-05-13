@@ -1,6 +1,6 @@
 // @flow
 /**
- * @file Channel List Dropdown React Component
+ * @file Login/Sign Up React component
  */
 import * as React from 'react';
 import PropTypes from 'prop-types';
@@ -13,6 +13,7 @@ import {
   UnauthenticatedDataAccessError,
 } from "../../lib/NetworkUtilities";
 import type { LoginServerResponseType } from '../../lib/LoginServerRequests';
+import {LocalStorageUtilities, StorageKeys} from "../../lib/LocalStorageUtilities";
 
 // Flow type definitions for injected props
 type LoginSignUpInjectedPropsType = {
@@ -40,12 +41,13 @@ type LoginSignUpStateType = {
   password: string,
   error: string,
   loggedIn: boolean,
+  rememberMe: boolean,
 }
 
 const ErrorMessages = {
   NOT_FOUND_MESSAGE: 'Your user name has not been registered, please visit the Sign Up page if you wish to register',
   UNAUTHENTICATED_MESSAGE: 'You have entered an invalid user name or password',
-  SIGN_UP_FAILED: 'The Sign Up service seems to be offline, please try again later',
+  SERVER_FAILED: 'Our service is currently offline, please try again later',
 };
 
 /**
@@ -69,11 +71,16 @@ class LoginSignUpComponent extends
       password: '',
       error: '',
       loggedIn: false,
+      rememberMe: false,
     }
   }
 
   state: LoginSignUpStateType;
   props: LoginSignUpPropsType;
+
+  componentDidMount = () => {
+    this.retrieveUserInfo();
+  };
 
   componentWillReceiveProps = (nextProps: LoginSignUpPropsType) => {
     if (this.props.login !== nextProps.login) {
@@ -84,6 +91,23 @@ class LoginSignUpComponent extends
     }
   };
 
+  shouldComponentUpdate = (nextProps: LoginSignUpPropsType, nextState: LoginSignUpStateType) => {
+    if (!this.state.rememberMe && nextState.rememberMe) {
+      this.storeUserInfo(nextState);
+    }
+
+    if (this.state.rememberMe && !nextState.rememberMe) {
+      this.removeUserInfo();
+    }
+
+    if (nextState.rememberMe &&
+      (this.state.email !== nextState.email || this.state.password !== nextState.password)) {
+      this.storeUserInfo(nextState);
+    }
+
+    return this.props !== nextProps || this.state !== nextState;
+  };
+
   /**
    * Logout button clicked event handler.
    * @param event {SyntheticMouseEvent} Mouse click event.
@@ -92,10 +116,25 @@ class LoginSignUpComponent extends
     this.setState({
       firstName: '',
       lastName: '',
-      email: '',
-      password: '',
+      // $FlowFixMe: suppressing this error regarding conditional define
+      ...(!this.state.rememberMe) && { email: '' },
+      // $FlowFixMe: suppressing this error regarding conditional define
+      ...(!this.state.rememberMe) && { password: '' },
       error: '',
       loggedIn: false,
+    });
+  };
+
+  /**
+   * Remember me checkbox changed handler.
+   * @param event {SyntheticMouseEvent} Mouse click event.
+   */
+  rememberMeCheckedHandler = (event: Object) => {
+    const target = event.target;
+    const value = target.type === 'checkbox' ? target.checked : target.value;
+
+    this.setState({
+      rememberMe: value,
     });
   };
 
@@ -128,7 +167,13 @@ class LoginSignUpComponent extends
               error: ErrorMessages.UNAUTHENTICATED_MESSAGE,
               loggedIn: false,
             });
+            return;
           }
+
+          this.setState({
+            error: ErrorMessages.SERVER_FAILED,
+            loggedIn: false,
+          });
         })
     } else {
       LoginServerRequests.registerUser(
@@ -141,11 +186,41 @@ class LoginSignUpComponent extends
         })
         .catch((error) => {
           this.setState({
-            error: ErrorMessages.SIGN_UP_FAILED,
+            error: ErrorMessages.SERVER_FAILED,
             loggedIn: false,
           });
         })
     }
+  };
+
+  /**
+   * Remember me has been checked so store any current user info
+   * @param userInfo User information to store
+   */
+  storeUserInfo = (userInfo: LoginSignUpStateType) => {
+    LocalStorageUtilities.serializeItem(StorageKeys.USER_INFO, userInfo);
+  };
+
+  /**
+   * Retrieve local storage
+   */
+  retrieveUserInfo = () => {
+    const userInfo = LocalStorageUtilities.deserializeItem(StorageKeys.USER_INFO);
+
+    if (userInfo) {
+      this.setState({
+        email: userInfo.email,
+        password: userInfo.password,
+        rememberMe: true,
+      });
+    }
+  };
+
+  /**
+   * Remove stored user information
+   */
+  removeUserInfo = () => {
+    LocalStorageUtilities.removeItem(StorageKeys.USER_INFO);
   };
 
   /**
@@ -157,6 +232,23 @@ class LoginSignUpComponent extends
       <div className="error">
         {this.state.error}
       </div>
+    ) : (<div></div>);
+
+    const rememberMe = this.props.login ? (
+      <label
+        htmlFor="rememberMe"
+        className={"rememberMeLabel"}
+      >
+        {LoginDisplayStringConstants.REMEMBER_ME}
+        <input
+          id="rememberMe"
+          type="checkbox"
+          className="rememberMe"
+          checked={this.state.rememberMe}
+          onChange={this.rememberMeCheckedHandler}
+          style={{opacity: 1}}
+        />
+      </label>
     ) : (<div></div>);
 
     const firstNameField = !this.props.login ? (
@@ -171,6 +263,7 @@ class LoginSignUpComponent extends
             value={this.state.firstName}
             placeholder={LoginDisplayStringConstants.FIRST_NAME_HINT}
             onChange={text => this.setState({firstName: text})}
+            onBlur={() => {}}
             validationOption={{
               name: LoginDisplayStringConstants.FIRST_NAME_LABEL,
               check: true,
@@ -193,6 +286,7 @@ class LoginSignUpComponent extends
             value={this.state.lastName}
             placeholder={LoginDisplayStringConstants.LAST_NAME_HINT}
             onChange={text => this.setState({lastName: text})}
+            onBlur={() => {}}
             validationOption={{
               name: LoginDisplayStringConstants.LAST_NAME_LABEL,
               check: true,
@@ -234,6 +328,7 @@ class LoginSignUpComponent extends
               value={this.state.email}
               placeholder={LoginDisplayStringConstants.EMAIL_HINT}
               onChange={text => this.setState({email: text})}
+              onBlur={() => {}}
               validationOption={{
                 name: LoginDisplayStringConstants.EMAIL_LABEL,
                 reg: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
@@ -254,6 +349,7 @@ class LoginSignUpComponent extends
               value={this.state.password}
               placeholder={LoginDisplayStringConstants.PASSWORD_HINT}
               onChange={text => this.setState({password: text})}
+              onBlur={() => {}}
               validationOption={{
                 name: LoginDisplayStringConstants.PASSWORD_LABEL,
                 reg: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/i,
@@ -271,6 +367,7 @@ class LoginSignUpComponent extends
             {this.props.login ? LoginDisplayStringConstants.LOGIN : LoginDisplayStringConstants.SIGN_UP}
           </button>
         </div>
+        {rememberMe}
         {error}
       </div>
     );
@@ -281,16 +378,6 @@ class LoginSignUpComponent extends
     );
   }
 }
-
-/*
-// Unconnected component for unit testing
-export const UnconnectedLoginSignUp = LoginSignUpComponent;
-
-// Connect LoginSignUp to allow actions to be emitted via dispatch
-const LoginSignUp = connect(
-  LoginSignUpComponent.mapStateToProps,
-)(LoginSignUpComponent);
-*/
 
 const LoginSignUp = LoginSignUpComponent;
 export default LoginSignUp;

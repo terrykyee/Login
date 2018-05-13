@@ -1,3 +1,4 @@
+//@flow
 /** List of URL templates for Login Server endpoints. */
 import urljoin from 'url-join';
 

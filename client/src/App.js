@@ -1,3 +1,7 @@
+//@flow
+/**
+ * @file Main application
+ */
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';

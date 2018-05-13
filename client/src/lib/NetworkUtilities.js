@@ -1,3 +1,7 @@
+//@flow
+/**
+ * @file Network communication utilities
+ */
 import ExtendableError from 'extendable-error-class';
 
 /**

@@ -14,5 +14,4 @@ app.use(function(req, res, next) {
 });
 app.use('/users', userController);
 
-
 export default app;

@@ -16,4 +16,5 @@ export const LoginDisplayStringConstants = {
   LOGIN: 'Log In',
   SIGN_UP: 'Sign Up',
   LOGOUT: 'Log Out',
+  REMEMBER_ME: 'Remember me',
 };

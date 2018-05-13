@@ -12,6 +12,7 @@
 .input {
   width: 250px;
 }
+
 .label {
   flex-grow: 1;
   font-size: small;
@@ -36,6 +37,7 @@
   font-size: 15px;
   height: 25px;
   margin: 0 120px;
+  margin-bottom: 5px;
 }
 
 .loginButton:focus {
@@ -56,4 +58,13 @@
   color: red;
   margin-top: 5px;
   font-size: 12px;
+}
+
+.rememberMeLabel {
+  font-size: small;
+}
+
+.rememberMe {
+  margin-top: 5px;
+  font-size: small;
 }
